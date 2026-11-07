@@ -35,6 +35,14 @@ targets:
         CFBundleDisplayName: "OCR屏幕翻译"
         UIBackgroundModes:
           - audio
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        NSCameraUsageDescription: "需要使用相机拍照识别文字并翻译"
+        NSPhotoLibraryUsageDescription: "需要访问相册选取图片进行文字识别和翻译"
+        ITSAppUsesNonExemptEncryption: false
     entitlements:
       path: OCRTranslate/OCRTranslate.entitlements
     settings:
