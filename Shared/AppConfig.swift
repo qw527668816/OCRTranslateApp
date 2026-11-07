@@ -11,10 +11,10 @@ enum AppConfig {
     static let appGroupID = "group.com.limaoswag.ocrtranslate"
 
     /// 主 App Bundle ID(改名需同步 project.yml 中 PRODUCT_BUNDLE_IDENTIFIER)
-    static let mainBundleID = "com.limaoswag.ocrtranslate"
+    static let mainBundleID = "app.artichoke1499.strawberry1148"
 
     /// 录屏扩展 Bundle ID(必须是主 App Bundle ID 的子前缀)
-    static let extensionBundleID = "com.limaoswag.ocrtranslate.ScreenTranslator"
+    static let extensionBundleID = "app.artichoke1499.strawberry1148.ScreenTranslator"
 
     // MARK: App Group 共享容器中的文件名
 

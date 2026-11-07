@@ -60,7 +60,7 @@ targets:
     settings:
       base:
         PRODUCT_NAME: "$(TARGET_NAME)"
-        PRODUCT_BUNDLE_IDENTIFIER: com.limaoswag.ocrtranslate
+        PRODUCT_BUNDLE_IDENTIFIER: app.artichoke1499.strawberry1148
         CODE_SIGN_STYLE: Manual
         CODE_SIGNING_ALLOWED: "NO"
         CODE_SIGNING_REQUIRED: "NO"
