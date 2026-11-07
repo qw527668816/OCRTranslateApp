@@ -76,12 +76,14 @@ final class AppleTranslationService: ObservableObject {
     ) async throws -> [String] {
         // 语言包已支持但未下载时,先触发系统准备(首次会有下载弹窗)
         if let source {
-            let availability = await LanguageAvailability(source: source, target: target).status
-            if availability == .supported {
+            let availability = LanguageAvailability()
+            let status = await availability.status(for: source, to: target)
+            if status == .supported {
                 try? await session.prepareTranslation()
             }
         }
-        let responses = try await session.translations(for: texts)
+        let requests = texts.map { TranslationSession.Request(sourceText: $0) }
+        let responses = try await session.translations(from: requests)
         return responses.map { $0.targetText }
     }
 }
