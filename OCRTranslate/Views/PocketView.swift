@@ -1,6 +1,5 @@
 import SwiftUI
 import WebKit
-import ReplayKit
 import PhotosUI
 
 /// 「口袋智能体」标签页:内置 pocket.html(问答/对话/翻译/识图/设置)
@@ -63,11 +62,11 @@ struct PocketWebView: UIViewRepresentable {
         /// 网页里 <input type=file> 触发时暂存回调
         var fileCompletion: (([URL]?) -> Void)?
 
-        // MARK: 文件选择(截图翻译/识图的选图入口)
+        // MARK: 文件选择(网页里 <input type=file> 触发,iOS 签名是 runOpenPanelWith)
 
         func webView(
             _ webView: WKWebView,
-            runFileInputPanelWithParameters parameters: WKFileInputPanelParameters,
+            runOpenPanelWith parameters: WKOpenPanelParameters,
             initiatedByFrame frame: WKFrameInfo,
             completionHandler: @escaping ([URL]?) -> Void
         ) {
