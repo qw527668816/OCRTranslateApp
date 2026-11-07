@@ -1,0 +1,104 @@
+workflows:
+  ocr-translate-ipa:
+    name: Build OCR Translate IPA
+    max_build_duration: 30
+    environment:
+      xcode: 16.0
+    scripts:
+      - name: Install xcodegen
+        script: |
+          curl -L --connect-timeout 30 --max-time 120 https://github.com/yonaskolb/XcodeGen/releases/download/2.45.4/xcodegen.zip -o xcodegen.zip
+          unzip -o xcodegen.zip
+          sudo cp xcodegen/bin/xcodegen /usr/local/bin/xcodegen
+          sudo chmod +x /usr/local/bin/xcodegen
+          xcodegen version
+
+      - name: Install ldid
+        script: |
+          brew install ldid
+          ldid -h || true
+
+      - name: Generate Xcode project
+        script: |
+          set -euo pipefail
+          plutil -lint ScreenTranslator/Info.plist
+          grep -Fq '<string>com.apple.broadcast-services-upload</string>' ScreenTranslator/Info.plist
+          grep -Fq '<string>ScreenTranslator.SampleHandler</string>' ScreenTranslator/Info.plist
+          xcodegen generate
+
+      - name: Build archive
+        script: |
+          set -o pipefail
+          xcodebuild clean archive \
+            -project OCRTranslate.xcodeproj \
+            -scheme OCRTranslate \
+            -configuration Release \
+            -archivePath build/OCRTranslate.xcarchive \
+            -destination "generic/platform=iOS" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM=""
+
+      - name: Debug archive contents
+        script: |
+          echo "=== Archive .app ==="
+          ls -la build/OCRTranslate.xcarchive/Products/Applications/OCRTranslate.app/
+          echo ""
+          echo "=== PlugIns ==="
+          ls -laR build/OCRTranslate.xcarchive/Products/Applications/OCRTranslate.app/PlugIns/
+          echo ""
+          echo "=== Main executable ==="
+          file build/OCRTranslate.xcarchive/Products/Applications/OCRTranslate.app/OCRTranslate
+          echo ""
+          echo "=== Extension executable ==="
+          file build/OCRTranslate.xcarchive/Products/Applications/OCRTranslate.app/PlugIns/ScreenTranslator.appex/ScreenTranslator
+
+      - name: ldid fakesign app and extension
+        script: |
+          set -euo pipefail
+          APP_PATH="build/OCRTranslate.xcarchive/Products/Applications/OCRTranslate.app"
+
+          echo "=== Final extension Info.plist ==="
+          plutil -p "$APP_PATH/PlugIns/ScreenTranslator.appex/Info.plist"
+
+          echo "=== Fakesigning main app binary ==="
+          ldid -S"OCRTranslate/OCRTranslate.entitlements" "$APP_PATH/OCRTranslate"
+
+          echo "=== Fakesigning extension binary ==="
+          ldid -S"ScreenTranslator/ScreenTranslator.entitlements" "$APP_PATH/PlugIns/ScreenTranslator.appex/ScreenTranslator"
+
+          echo "=== Verifying entitlements on main app ==="
+          MAIN_ENTITLEMENTS="$(ldid -e "$APP_PATH/OCRTranslate")"
+          test -n "$MAIN_ENTITLEMENTS"
+          printf '%s\n' "$MAIN_ENTITLEMENTS"
+
+          echo "=== Verifying entitlements on extension ==="
+          EXT_ENTITLEMENTS="$(ldid -e "$APP_PATH/PlugIns/ScreenTranslator.appex/ScreenTranslator")"
+          test -n "$EXT_ENTITLEMENTS"
+          printf '%s\n' "$EXT_ENTITLEMENTS"
+
+          echo "=== Mach-O signature load commands ==="
+          otool -l "$APP_PATH/PlugIns/ScreenTranslator.appex/ScreenTranslator" | grep -A3 LC_CODE_SIGNATURE
+
+      - name: Package IPA
+        script: |
+          set -euo pipefail
+          APP_PATH="build/OCRTranslate.xcarchive/Products/Applications/OCRTranslate.app"
+          WORK_DIR="/tmp/ipa_build"
+          rm -rf "$WORK_DIR"
+          mkdir -p "$WORK_DIR/Payload"
+          cp -R "$APP_PATH" "$WORK_DIR/Payload/"
+          test -d "$WORK_DIR/Payload/OCRTranslate.app/PlugIns/ScreenTranslator.appex"
+          plutil -lint "$WORK_DIR/Payload/OCRTranslate.app/PlugIns/ScreenTranslator.appex/Info.plist"
+          xattr -cr "$WORK_DIR/Payload" 2>/dev/null || true
+          cd "$WORK_DIR"
+          zip -ry "$CM_BUILD_DIR/OCRTranslate.ipa" Payload/
+          echo "=== IPA first 20 entries ==="
+          unzip -l "$CM_BUILD_DIR/OCRTranslate.ipa" | head -20
+          echo ""
+          echo "=== IPA Extension entries ==="
+          unzip -l "$CM_BUILD_DIR/OCRTranslate.ipa" | grep -E "PlugIns|ScreenTranslator"
+
+    artifacts:
+      - OCRTranslate.ipa
