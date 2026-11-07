@@ -34,6 +34,17 @@ targets:
         CFBundleVersion: "2"
         CFBundleDisplayName: "OCR屏幕翻译"
         CFBundleIconName: "AppIcon"
+        CFBundleIcons:
+          CFBundlePrimaryIcon:
+            CFBundleIconFiles:
+              - AppIcon60x60
+            CFBundleIconName: "AppIcon"
+        CFBundleIcons~ipad:
+          CFBundlePrimaryIcon:
+            CFBundleIconFiles:
+              - AppIcon60x60
+              - AppIcon76x76~ipad
+            CFBundleIconName: "AppIcon"
         UIBackgroundModes:
           - audio
         UILaunchScreen: {}
