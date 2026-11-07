@@ -34,24 +34,31 @@ struct TranslateResult: Codable, Equatable {
         )
     }
 
+    /// 主键集合:只包含存储属性,Encodable 可自动合成
     private enum CodingKeys: String, CodingKey {
         case id, segments, sourceLanguage, targetLanguage, timestamp
+    }
+
+    /// 旧版本文件的键集合(只有 originalText/translatedText,没有 segments)
+    private enum LegacyKeys: String, CodingKey {
         case originalText, translatedText
     }
 
-    /// 兼容旧版本写入磁盘的 JSON(只有 originalText/translatedText,没有 segments)
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id = try c.decode(UUID.self, forKey: .id)
         sourceLanguage = try c.decode(String.self, forKey: .sourceLanguage)
         targetLanguage = try c.decode(String.self, forKey: .targetLanguage)
         timestamp = try c.decode(Date.self, forKey: .timestamp)
-        if let segs = try? c.decode([SegmentPair].self, forKey: .segments) {
+
+        if let segs = try? c.decode([SegmentPair].self, forKey: .segments), !segs.isEmpty {
             segments = segs
-        } else {
-            let o = (try? c.decode(String.self, forKey: .originalText)) ?? ""
-            let t = (try? c.decode(String.self, forKey: .translatedText)) ?? ""
+        } else if let legacy = try? decoder.container(keyedBy: LegacyKeys.self) {
+            let o = (try? legacy.decode(String.self, forKey: .originalText)) ?? ""
+            let t = (try? legacy.decode(String.self, forKey: .translatedText)) ?? ""
             segments = [SegmentPair(original: o, translated: t)]
+        } else {
+            segments = []
         }
     }
 }
