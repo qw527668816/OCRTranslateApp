@@ -1,4 +1,4 @@
-name: Build IPA
+﻿name: Build IPA
 
 on:
   push:
@@ -51,10 +51,11 @@ jobs:
         brew install ldid
         APP_PATH="build/OCRTranslate.xcarchive/Products/Applications/OCRTranslate.app"
         ldid -S"OCRTranslate/OCRTranslate.entitlements" "$APP_PATH/OCRTranslate"
-        ldid -S"ScreenTranslator/ScreenTranslator.entitlements" "$APP_PATH/PlugIns/ScreenTranslator.appex/ScreenTranslator"
+        if [ -d "$APP_PATH/PlugIns/ScreenTranslator.appex" ]; then
+          ldid -S"ScreenTranslator/ScreenTranslator.entitlements" "$APP_PATH/PlugIns/ScreenTranslator.appex/ScreenTranslator"
+          echo "--- appex fakesigned ---"
+        fi
         ldid -e "$APP_PATH/OCRTranslate" | head -20
-        echo "---"
-        ldid -e "$APP_PATH/PlugIns/ScreenTranslator.appex/ScreenTranslator" | head -20
 
     - name: Package IPA
       if: success()
@@ -65,11 +66,13 @@ jobs:
         rm -rf "$WORK_DIR"
         mkdir -p "$WORK_DIR/Payload"
         cp -R "$APP_PATH" "$WORK_DIR/Payload/"
-        test -d "$WORK_DIR/Payload/OCRTranslate.app/PlugIns/ScreenTranslator.appex"
+        if [ -d "$WORK_DIR/Payload/OCRTranslate.app/PlugIns/ScreenTranslator.appex" ]; then
+          echo "extension embedded"
+        fi
         xattr -cr "$WORK_DIR/Payload" 2>/dev/null || true
         cd "$WORK_DIR"
         zip -ry "$GITHUB_WORKSPACE/OCRTranslate.ipa" Payload/
-        unzip -l "$GITHUB_WORKSPACE/OCRTranslate.ipa" | grep -E "PlugIns|ScreenTranslator"
+        unzip -l "$GITHUB_WORKSPACE/OCRTranslate.ipa" | head -20
 
     - name: Upload IPA
       if: success()

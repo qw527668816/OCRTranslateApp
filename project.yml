@@ -50,37 +50,9 @@ targets:
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         MARKETING_VERSION: "1.0.1"
         CURRENT_PROJECT_VERSION: "2"
-    dependencies:
-      - target: ScreenTranslator
-        embed: true
 
-  ScreenTranslator:
-    type: app-extension
-    platform: iOS
-    sources:
-      - path: ScreenTranslator
-      - path: Shared
-    info:
-      path: ScreenTranslator/Info.plist
-      properties:
-        CFBundleShortVersionString: "1.0.1"
-        CFBundleVersion: "2"
-        NSExtension:
-          NSExtensionAttributes:
-            RPBroadcastProcessMode: "RPBroadcastProcessModeSampleBuffer"
-          NSExtensionPointIdentifier: "com.apple.broadcast-services-upload"
-          NSExtensionPrincipalClass: "ScreenTranslator.SampleHandler"
-    entitlements:
-      path: ScreenTranslator/ScreenTranslator.entitlements
-    settings:
-      base:
-        PRODUCT_NAME: "$(TARGET_NAME)"
-        PRODUCT_BUNDLE_IDENTIFIER: com.limaoswag.ocrtranslate.ScreenTranslator
-        SWIFT_ACTIVE_COMPILATION_CONDITIONS: SCREEN_EXTENSION
-        CODE_SIGN_STYLE: Manual
-        CODE_SIGNING_ALLOWED: "NO"
-        CODE_SIGNING_REQUIRED: "NO"
-        CODE_SIGN_IDENTITY: ""
-        DEVELOPMENT_TEAM: ""
-        MARKETING_VERSION: "1.0.1"
-        CURRENT_PROJECT_VERSION: "2"
+# 录屏扩展(ScreenTranslator)目标已暂时移除:无 App Group 证书环境下的轻量版。
+# 恢复全功能版:把 .github/workflows/build.yml 的 ldid/Package 步骤保留即可,
+# 并从 git 历史恢复本文件的 ScreenTranslator target 与 dependencies 配置,
+# 再把两个 .entitlements 换回带 App Group 的版本(见 git 历史)。
+
