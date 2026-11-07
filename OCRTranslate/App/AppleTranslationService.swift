@@ -1,4 +1,6 @@
 import Foundation
+import SwiftUI
+import Combine
 import Translation
 
 /// iOS 18+ 设备端 Apple 翻译(免费、离线、无需任何 API Key)

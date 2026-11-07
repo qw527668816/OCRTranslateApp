@@ -1,4 +1,5 @@
 import AVFoundation
+import AVKit
 import UIKit
 
 /// 画中画悬浮:把"原文-译文对照"渲染成图片页 → 合成循环视频 → 以画中画小窗悬浮在任意 App 上方。

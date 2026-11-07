@@ -1,5 +1,6 @@
 import SwiftUI
 import WebKit
+import ReplayKit
 import PhotosUI
 
 /// 「口袋智能体」标签页:内置 pocket.html(问答/对话/翻译/识图/设置)
