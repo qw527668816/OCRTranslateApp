@@ -74,14 +74,8 @@ final class AppleTranslationService: ObservableObject {
         source: Locale.Language?,
         target: Locale.Language
     ) async throws -> [String] {
-        // 语言包已支持但未下载时,先触发系统准备(首次会有下载弹窗)
-        if let source {
-            let availability = LanguageAvailability()
-            let status = await availability.status(for: source, to: target)
-            if status == .supported {
-                try? await session.prepareTranslation()
-            }
-        }
+        // 注:语言包缺失/不支持时 translations 会直接抛错,由上层显示给用户;
+        // 首次使用系统会自动弹语言包下载提示,无需手动检查。
         let requests = texts.map { TranslationSession.Request(sourceText: $0) }
         let responses = try await session.translations(from: requests)
         return responses.map { $0.targetText }
