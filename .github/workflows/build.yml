@@ -1,1 +1,80 @@
+name: Build IPA
 
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 90
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Xcode
+      run: |
+        sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer || \
+        sudo xcode-select -s /Applications/Xcode_16.0.app/Contents/Developer || \
+        sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+        xcodebuild -version
+
+    - name: Install xcodegen
+      run: |
+        curl -L https://github.com/yonaskolb/XcodeGen/releases/download/2.45.4/xcodegen.zip -o xcodegen.zip
+        unzip -o xcodegen.zip
+        sudo cp xcodegen/bin/xcodegen /usr/local/bin/xcodegen
+        sudo chmod +x /usr/local/bin/xcodegen
+        xcodegen version
+
+    - name: Generate Xcode project
+      run: xcodegen generate
+
+    - name: Build Archive
+      run: |
+        set -o pipefail
+        xcodebuild clean archive \
+          -project OCRTranslate.xcodeproj \
+          -scheme OCRTranslate \
+          -configuration Release \
+          -archivePath build/OCRTranslate.xcarchive \
+          -destination "generic/platform=iOS" \
+          CODE_SIGNING_ALLOWED=NO \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGN_IDENTITY="" \
+          DEVELOPMENT_TEAM=""
+
+    - name: ldid fakesign (TrollStore requirement)
+      run: |
+        brew install ldid
+        APP_PATH="build/OCRTranslate.xcarchive/Products/Applications/OCRTranslate.app"
+        ldid -S"OCRTranslate/OCRTranslate.entitlements" "$APP_PATH/OCRTranslate"
+        ldid -S"ScreenTranslator/ScreenTranslator.entitlements" "$APP_PATH/PlugIns/ScreenTranslator.appex/ScreenTranslator"
+        ldid -e "$APP_PATH/OCRTranslate" | head -20
+        echo "---"
+        ldid -e "$APP_PATH/PlugIns/ScreenTranslator.appex/ScreenTranslator" | head -20
+
+    - name: Package IPA
+      if: success()
+      run: |
+        set -euo pipefail
+        APP_PATH="build/OCRTranslate.xcarchive/Products/Applications/OCRTranslate.app"
+        WORK_DIR="/tmp/ipa_build"
+        rm -rf "$WORK_DIR"
+        mkdir -p "$WORK_DIR/Payload"
+        cp -R "$APP_PATH" "$WORK_DIR/Payload/"
+        test -d "$WORK_DIR/Payload/OCRTranslate.app/PlugIns/ScreenTranslator.appex"
+        xattr -cr "$WORK_DIR/Payload" 2>/dev/null || true
+        cd "$WORK_DIR"
+        zip -ry "$GITHUB_WORKSPACE/OCRTranslate.ipa" Payload/
+        unzip -l "$GITHUB_WORKSPACE/OCRTranslate.ipa" | grep -E "PlugIns|ScreenTranslator"
+
+    - name: Upload IPA
+      if: success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: OCRTranslate-IPA
+        path: OCRTranslate.ipa
+        retention-days: 90
