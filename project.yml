@@ -33,6 +33,7 @@ targets:
         CFBundleShortVersionString: "1.0.1"
         CFBundleVersion: "2"
         CFBundleDisplayName: "OCR屏幕翻译"
+        CFBundleIconName: "AppIcon"
         UIBackgroundModes:
           - audio
         UILaunchScreen: {}

@@ -71,7 +71,7 @@ jobs:
         fi
         xattr -cr "$WORK_DIR/Payload" 2>/dev/null || true
         cd "$WORK_DIR"
-        zip -ry "$GITHUB_WORKSPACE/OCRTranslate.ipa" Payload/
+        zip -ry "$GITHUB_WORKSPACE/OCRTranslate.ipa" Payload/ -x "._*" -x ".DS_Store" -x "__MACOSX"
         unzip -l "$GITHUB_WORKSPACE/OCRTranslate.ipa" | head -20
 
     - name: Upload IPA
