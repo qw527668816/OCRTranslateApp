@@ -7,6 +7,7 @@ struct ContentView: View {
     @StateObject private var translationManager = TranslationManager.shared
     @ObservedObject private var pip = PiPOverlay.shared
     @State private var showSettings = false
+    @State private var showHistory = false
 
     var body: some View {
         NavigationView {
@@ -30,6 +31,13 @@ struct ContentView: View {
             }
             .navigationTitle("屏幕翻译")
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        showHistory = true
+                    } label: {
+                        Image(systemName: "clock.arrow.circlepath")
+                    }
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         showSettings = true
@@ -40,6 +48,9 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showSettings) {
                 SettingsView()
+            }
+            .sheet(isPresented: $showHistory) {
+                HistoryView()
             }
         }
     }

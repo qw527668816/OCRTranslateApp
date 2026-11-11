@@ -15,6 +15,8 @@ final class PiPOverlay: NSObject, ObservableObject {
     private var player: AVPlayer?
     private var pipController: AVPictureInPictureController?
     private var endObserver: NSObjectProtocol?
+    /// 静音音轨循环播放:防止"纯视频"小窗在切后台后被系统暂停
+    private var silencePlayer: AVAudioPlayer?
 
     private let videoSize = CGSize(width: 720, height: 960)
     private let secondsPerPage: Double = 8
@@ -54,6 +56,8 @@ final class PiPOverlay: NSObject, ObservableObject {
         player?.pause()
         player = nil
         pipController = nil
+        silencePlayer?.stop()
+        silencePlayer = nil
         if let observer = endObserver {
             NotificationCenter.default.removeObserver(observer)
             endObserver = nil
@@ -82,6 +86,7 @@ final class PiPOverlay: NSObject, ObservableObject {
         let session = AVAudioSession.sharedInstance()
         try? session.setCategory(.playback, mode: .moviePlayback)
         try? session.setActive(true)
+        startSilenceLoop()
 
         let layer = AVPlayerLayer(player: player)
         let controller = AVPictureInPictureController(playerLayer: layer)
@@ -94,6 +99,36 @@ final class PiPOverlay: NSObject, ObservableObject {
         controller?.startPictureInPicture()
         isActive = true
         statusText = "悬浮窗已开启,可切换到任意 App"
+    }
+
+    // MARK: - 静音音轨
+
+    private func startSilenceLoop() {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("pip_silence.wav")
+        if !FileManager.default.fileExists(atPath: url.path) {
+            Self.writeSilentWav(to: url, seconds: 12)
+        }
+        if let p = try? AVAudioPlayer(contentsOf: url) {
+            p.numberOfLoops = -1
+            p.play()
+            silencePlayer = p
+        }
+    }
+
+    /// 生成极小的静音 WAV(单声道 8kHz 16-bit PCM)
+    private static func writeSilentWav(to url: URL, seconds: Double) {
+        let sampleRate = 8000
+        let samples = Int(Double(sampleRate) * seconds)
+        var data = Data()
+        func appendString(_ s: String) { data.append(s.data(using: .ascii)!) }
+        func appendU32(_ v: UInt32) { var x = v.littleEndian; withUnsafeBytes(of: &x) { data.append(contentsOf: $0) } }
+        func appendU16(_ v: UInt16) { var x = v.littleEndian; withUnsafeBytes(of: &x) { data.append(contentsOf: $0) } }
+        appendString("RIFF"); appendU32(UInt32(36 + samples * 2)); appendString("WAVE")
+        appendString("fmt "); appendU32(16); appendU16(1); appendU16(1)
+        appendU32(UInt32(sampleRate)); appendU32(UInt32(sampleRate * 2)); appendU16(2); appendU16(16)
+        appendString("data"); appendU32(UInt32(samples * 2))
+        data.append(contentsOf: repeatElement(0, count: samples * 2))
+        try? data.write(to: url)
     }
 
     // MARK: - 渲染对照页(每页若干段,深色卡片风)

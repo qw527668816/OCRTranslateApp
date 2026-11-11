@@ -80,6 +80,12 @@ final class BroadcastMonitor: ObservableObject {
         lastOCRText = result.originalText
         lastTranslatedText = result.translatedText
         lastUpdateTime = result.timestamp
+
+        // 写入翻译历史
+        TranslationManager.shared.appendHistory(
+            segments: result.segments,
+            engine: TranslationManager.shared.config.engineType.displayName
+        )
     }
 
     // MARK: - Commands

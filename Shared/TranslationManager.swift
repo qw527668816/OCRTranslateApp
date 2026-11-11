@@ -5,11 +5,15 @@ class TranslationManager: ObservableObject {
     static let shared = TranslationManager()
 
     @Published var config = TranslationEngineConfig()
+    @Published var history: [HistoryEntry] = []
 
     private let defaults = UserDefaults(suiteName: AppConfig.appGroupID) ?? .standard
     private let configKey = "translationEngineConfig"
+    private let historyKey = "translateHistory"
 
-    private init() {}
+    private init() {
+        loadHistory()
+    }
 
     func saveSettings() {
         if let data = try? JSONEncoder().encode(config) {
@@ -21,6 +25,42 @@ class TranslationManager: ObservableObject {
         guard let data = defaults.data(forKey: configKey),
               let saved = try? JSONDecoder().decode(TranslationEngineConfig.self, from: data) else { return }
         config = saved
+    }
+
+    // MARK: - 翻译历史
+
+    struct HistoryEntry: Codable, Identifiable {
+        let id: UUID
+        let date: Date
+        let engine: String
+        let segments: [SegmentPair]
+    }
+
+    func appendHistory(segments: [SegmentPair], engine: String) {
+        guard !segments.isEmpty else { return }
+        history.insert(HistoryEntry(id: UUID(), date: Date(), engine: engine, segments: segments), at: 0)
+        if history.count > 30 { history = Array(history.prefix(30)) }
+        if let data = try? JSONEncoder().encode(history) {
+            defaults.set(data, forKey: historyKey)
+        }
+    }
+
+    func clearHistory() {
+        history = []
+        defaults.removeObject(forKey: historyKey)
+    }
+
+    func deleteHistory(at offsets: IndexSet) {
+        history.remove(atOffsets: offsets)
+        if let data = try? JSONEncoder().encode(history) {
+            defaults.set(data, forKey: historyKey)
+        }
+    }
+
+    private func loadHistory() {
+        guard let data = defaults.data(forKey: historyKey),
+              let saved = try? JSONDecoder().decode([HistoryEntry].self, from: data) else { return }
+        history = saved
     }
 
     // MARK: - 单段翻译(兼容旧接口)
