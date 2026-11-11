@@ -67,6 +67,7 @@ struct ManualTranslateView: View {
                 }
                 .padding()
             }
+            .background(PTBackground())
             .navigationTitle("截图翻译")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -116,7 +117,7 @@ struct ManualTranslateView: View {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 7)
                         .frame(maxWidth: .infinity)
-                        .background(engine == e ? Color.accentColor.opacity(0.18) : Color(.tertiarySystemFill))
+                        .background(engine == e ? Color.accentColor.opacity(0.18) : Color.ptField)
                         .foregroundColor(engine == e ? .accentColor : .secondary)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
@@ -132,9 +133,12 @@ struct ManualTranslateView: View {
                 Label("相册选图", systemImage: "photo.on.rectangle")
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
-                    .background(Color.accentColor)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .fill(LinearGradient(colors: [.ptAccent, .ptAccent2], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    )
                     .foregroundColor(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .shadow(color: Color.ptAccent2.opacity(0.35), radius: 10, y: 5)
             }
 
             if UIImagePickerController.isSourceTypeAvailable(.camera) {
@@ -144,7 +148,7 @@ struct ManualTranslateView: View {
                     Label("拍照", systemImage: "camera")
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
-                        .background(Color(.tertiarySystemFill))
+                        .background(Color.ptField)
                         .foregroundColor(.primary)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
@@ -219,7 +223,7 @@ struct ManualTranslateView: View {
             }
         }
         .padding()
-        .background(Color(.secondarySystemGroupedBackground))
+        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(.ultraThinMaterial).overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Color.ptLine, lineWidth: 1)))
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
@@ -233,7 +237,7 @@ struct ManualTranslateView: View {
                 SegmentListView(segments: segments, showBilingual: manager.config.showBilingual)
             }
             .padding()
-            .background(Color(.tertiarySystemGroupedBackground))
+            .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.ptField))
             .clipShape(RoundedRectangle(cornerRadius: 12))
 
             Button {
@@ -245,7 +249,7 @@ struct ManualTranslateView: View {
                 )
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
-                .background(pip.isActive ? Color.red : Color(.tertiarySystemFill))
+                .background(pip.isActive ? Color.red : Color.ptField)
                 .foregroundColor(pip.isActive ? .white : .primary)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
@@ -257,7 +261,7 @@ struct ManualTranslateView: View {
             }
         }
         .padding()
-        .background(Color(.secondarySystemGroupedBackground))
+        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(.ultraThinMaterial).overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Color.ptLine, lineWidth: 1)))
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
@@ -267,7 +271,7 @@ struct ManualTranslateView: View {
                 .font(.footnote)
                 .padding(.vertical, 7)
                 .frame(maxWidth: .infinity)
-                .background(active ? Color.accentColor.opacity(0.18) : Color(.tertiarySystemFill))
+                .background(active ? Color.accentColor.opacity(0.18) : Color.ptField)
                 .foregroundColor(active ? .accentColor : .secondary)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
         }
@@ -283,7 +287,7 @@ struct ManualTranslateView: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.secondarySystemGroupedBackground))
+        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(.ultraThinMaterial).overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Color.ptLine, lineWidth: 1)))
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 

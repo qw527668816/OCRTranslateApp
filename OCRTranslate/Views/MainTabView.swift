@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 主框架:屏幕翻译(实时)/ 截图翻译(手动)/ 智能体(对话)
+/// 主框架:屏幕翻译(实时)/ 截图翻译(手动)/ 智能体(对话)/ 口袋(网页)
 struct MainTabView: View {
     var body: some View {
         TabView {
@@ -25,6 +25,7 @@ struct MainTabView: View {
                 }
         }
         .background(translationBridge)
+        .preferredColorScheme(.dark)
     }
 
     /// iOS 18+ 设备端 Apple 翻译的 session 桥接(0x0 隐藏视图)

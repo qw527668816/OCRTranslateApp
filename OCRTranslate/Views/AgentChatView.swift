@@ -33,6 +33,7 @@ struct AgentChatView: View {
                 Divider()
                 inputBar
             }
+            .background(PTBackground())
             .navigationTitle("智能体")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -77,7 +78,7 @@ struct AgentChatView: View {
                             .font(.footnote)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
-                            .background(isSelected ? Color.accentColor.opacity(0.18) : Color(.tertiarySystemFill))
+                            .background(isSelected ? Color.accentColor.opacity(0.18) : Color.ptField)
                             .foregroundColor(isSelected ? .accentColor : .primary)
                             .clipShape(Capsule())
                     }
@@ -143,7 +144,7 @@ struct AgentChatView: View {
                 .font(.body)
                 .textSelection(.enabled)
                 .padding(12)
-                .background(isUser ? Color.accentColor.opacity(0.85) : Color(.tertiarySystemFill))
+                .background(isUser ? Color.accentColor.opacity(0.85) : Color.ptField)
                 .foregroundColor(isUser ? .white : .primary)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
             if !isUser { Spacer(minLength: 40) }
