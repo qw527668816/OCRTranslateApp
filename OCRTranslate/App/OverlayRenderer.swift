@@ -86,7 +86,8 @@ enum OverlayRenderer {
                         .font: fittedFont,
                         .foregroundColor: UIColor.black
                     ]
-                    (translation as NSAttributedString).draw(
+                    let attributed = NSAttributedString(string: translation, attributes: attrs)
+                    attributed.draw(
                         with: CGRect(x: rect.minX - 1, y: rect.minY + 1, width: textWidth, height: fittedHeight + 4),
                         options: [.usesLineFragmentOrigin, .usesFontLeading],
                         context: nil

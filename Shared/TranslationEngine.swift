@@ -37,6 +37,8 @@ struct TranslationEngineConfig: Codable {
     var apiEndpoint: String = ""
 
     var aiModel: String = ""
+    /// AI 视觉提取用的识图模型(截图翻译 AI 视觉引擎/识图页)
+    var vlmModel: String = ""
     var aiPrompt: String = """
 我将给你发送一个JSON对象,键是编号,值是待翻译文本。请把每个值翻译为简体中文,返回一个结构相同的JSON对象:键保持不变,值替换为对应译文。只输出JSON本身,不要解释,不要使用markdown代码块。
 """

@@ -489,3 +489,95 @@ enum VLMExtractor {
             .compactMap { obj[$0] as? String }
     }
 }
+
+// MARK: - 相册选择(PHPicker,无需相册权限)
+
+struct PhotoPicker: UIViewControllerRepresentable {
+    @Binding var image: UIImage?
+    var onPicked: () -> Void
+
+    func makeUIViewController(context: Context) -> PHPickerViewController {
+        var config = PHPickerConfiguration()
+        config.filter = .images
+        config.selectionLimit = 1
+        let picker = PHPickerViewController(configuration: config)
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    func updateUIViewController(_ uiViewController: PHPickerViewController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+
+    final class Coordinator: NSObject, PHPickerViewControllerDelegate {
+        let parent: PhotoPicker
+
+        init(_ parent: PhotoPicker) {
+            self.parent = parent
+        }
+
+        func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+            picker.dismiss(animated: true)
+
+            guard let provider = results.first?.itemProvider,
+                  provider.canLoadObject(ofClass: UIImage.self) else {
+                return // 用户取消,不触发翻译
+            }
+
+            provider.loadObject(ofClass: UIImage.self) { [weak self] object, _ in
+                guard let self = self else { return }
+                DispatchQueue.main.async {
+                    if let img = object as? UIImage {
+                        self.parent.image = img
+                    }
+                    self.parent.onPicked()
+                }
+            }
+        }
+    }
+}
+
+// MARK: - 相机拍照
+
+struct CameraPicker: UIViewControllerRepresentable {
+    @Binding var image: UIImage?
+    var onCaptured: () -> Void
+
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.sourceType = .camera
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+
+    final class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        let parent: CameraPicker
+
+        init(_ parent: CameraPicker) {
+            self.parent = parent
+        }
+
+        func imagePickerController(
+            _ picker: UIImagePickerController,
+            didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
+        ) {
+            if let img = info[.originalImage] as? UIImage {
+                parent.image = img
+            }
+            picker.dismiss(animated: true)
+            parent.onCaptured()
+        }
+
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            picker.dismiss(animated: true)
+        }
+    }
+}
